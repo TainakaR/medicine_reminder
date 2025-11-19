@@ -12,6 +12,8 @@ type Props = {
     data: OverdueData; 
     // App.tsxから渡される完了処理関数
     onAction: (id: string) => void;
+    // ボタンアクションの種類
+    actionType: string;
     // ボタンテキスト (App.tsxで指定)
     completeButtonText: string; 
 };
@@ -38,6 +40,7 @@ export const OverduePage: React.FC<Props> = ({
             key={item.id}
             data={item}
             onAction={onAction}
+            actionType="COMPLETE"
             completeButtonText={completeButtonText}
         />
     ));
@@ -48,6 +51,7 @@ export const OverduePage: React.FC<Props> = ({
             key={item.id}
             data={item}
             onAction={onAction}
+            actionType="COMPLETE"
             completeButtonText={completeButtonText}
         />
     ));

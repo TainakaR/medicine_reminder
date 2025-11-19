@@ -7,6 +7,8 @@ type Props = {
     data: Reminder[]; 
     // App.tsxから渡される完了処理関数
     onAction: (id: string) => void;
+    // ボタンアクションの種類
+    actionType: string;
     // ボタンテキスト (App.tsxで指定)
     completeButtonText: string; 
 };
@@ -33,7 +35,8 @@ export const CompletedPage: React.FC<Props> = ({
         <ReminderItem
             key={item.id}
             data={item}
-            onAction={onAction} 
+            onAction={onAction}
+            actionType="DELETE"
             completeButtonText={completeButtonText} 
         />
     ));

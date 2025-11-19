@@ -1,14 +1,21 @@
 import React, { useState } from "react";
 import type { Reminder } from "../types";
 import { parseISO, differenceInCalendarDays } from "date-fns";
+import { getActionConfig } from "../utils/actionUtils";
+import type { ActionType } from "../types";
 
 type Props = {
     data: Reminder;
     onAction: (id: string) => void;
+    actionType: ActionType; 
     completeButtonText?: string;
 };
 
-export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonText }) => {
+export const ReminderItem: React.FC<Props> = ({ data, onAction, actionType, completeButtonText }) => {
+    
+    //ActionTypeに基づいて必要な設定情報を取得
+    const actionConfig = getActionConfig(actionType);
+    
     // 完了ボタンのハンドラー
     const [showModal, setShowModal] = useState(false);
     /* 完了確認モーダルの表示 */
@@ -39,35 +46,20 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
 
     const durationLabel = getDurationLabel();
     
-
-    // first: 赤系, long: 水色系
     const colorStyles =
         data.category === "first"
             ? "bg-red-50 border-red-200 text-red-900"     // 'first'スタイル
             : "bg-cyan-50 border-cyan-200 text-cyan-900"; // 'long'スタイル
-
-    // 薬の属性ラベル（firstなら赤、longなら水色）
     const categoryLabel = data.category === "first" ? "初回" : "長期";
     const categoryBadgeColor =
         data.category === "first" ? "bg-red-500" : "bg-cyan-500";
+    
+    // App.tsxで指定されたボタン文字列を優先し、指定がなければActionUtilsのデフォルトを使用
+    const buttonText = completeButtonText || actionConfig.buttonText;
+    
+    // モーダルの表示ラベルとボタンクラスはActionConfigから取得
+    const { modalActionLabel, buttonClass, confirmButtonClass } = actionConfig;
 
-    const buttonText = completeButtonText || '完了';
-    const isDeleteAction = buttonText === '削除';
-    const isEditAction = buttonText === '変更';
-
-    const modalActionLabel = isDeleteAction ? '完全に削除' : isEditAction ? '変更' : '対処済み';
-
-    const confirmButtonClass = isDeleteAction
-        ? "bg-red-600 hover:bg-red-700" 
-        : isEditAction
-        ? "bg-blue-600 hover:bg-blue-700"
-        : "bg-teal-500 hover:bg-teal-600";
-
-    const buttonClass = isDeleteAction
-        ? "bg-red-500 hover:bg-red-600"
-        : isEditAction
-        ? "bg-blue-500 hover:bg-blue-600"
-        : "bg-teal-500 hover:bg-teal-600";
     
     return (
         <>
@@ -75,12 +67,9 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
                 className={`border-2 rounded-lg p-4 mb-4 shadow-sm flex flex-col sm:flex-row justify-between gap-4 ${colorStyles}`}
             >
                 {/* --- 左側: 情報エリア --- */}
-                    <div className="flex-1">
-                    {/* ヘッダー: 属性ラベル + ID + 氏名 */}
+                <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                        <span
-                            className={`${categoryBadgeColor} text-white text-xs font-bold px-2 py-1 rounded-full`}
-                        >
+                        <span className={`${categoryBadgeColor} text-white text-xs font-bold px-2 py-1 rounded-full`}>
                             {categoryLabel}
                         </span>
                         <span className="bg-white/80 text-gray-600 text-xs font-bold px-2 py-1 rounded border border-gray-300">
@@ -92,13 +81,11 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
                         <span className="text-lg font-bold text-gray-800">{data.name}</span>
                     </div>
 
-                    {/* 来局日 */}
                     <div className="text-sm mb-2">
                         <span className="font-semibold mr-2 text-gray-600">来局日:</span>
                         {data.createdAt}
                     </div>
 
-                    {/* 備考 (ある場合のみ表示) */}
                     {data.remarks && (
                         <div className="mt-2 p-2 bg-white/60 rounded text-sm text-gray-700 border border-gray-200/50">
                             <span className="font-bold text-xs text-gray-500 block mb-1">
@@ -114,6 +101,7 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
                     {!data.isDone && (
                         <button
                             onClick={handleClickComplete}
+                            // actionConfigから取得したクラスを使用
                             className={`${buttonClass} text-white font-bold py-2 px-6 rounded shadow transition-colors`}
                         >
                             {buttonText}
@@ -123,11 +111,8 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
             </div>
 
             {showModal && (
-            // 1. 背景の黒い半透明レイヤー (fixedで画面全体を覆う)
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 transition-all">
-                    {/* 2. モーダル本体の白い箱 */}
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-fade-in">
-
                         <h3 className="text-lg font-bold text-gray-800 mb-2">
                             確認
                         </h3>
@@ -135,7 +120,6 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
                             <span className="font-bold text-gray-800">{data.name}</span> さんのリマインドを「{modalActionLabel}」にしますか？
                         </p>
 
-                        {/* ボタンエリア */}
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={handleCancel}
@@ -145,9 +129,10 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, completeButtonTe
                             </button>
                             <button
                                 onClick={handleConfirm}
+                                // actionConfigから取得したクラスを使用
                                 className={`px-4 py-2 rounded ${confirmButtonClass} text-white font-bold shadow transition-colors`}
                             >
-                                {isEditAction ? '変更' : 'OK'}
+                                {actionType === 'EDIT' ? '変更' : 'OK'}
                             </button>
                         </div>
                     </div>

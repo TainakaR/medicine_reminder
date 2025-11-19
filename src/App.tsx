@@ -60,6 +60,7 @@ function App() {
           <RemindPage
             data={grouped.remind}
             onAction={handleComplete}
+            actionType="COMPLETE"
             completeButtonText="完了" // ボタンテキストを指定
           />
         );
@@ -70,6 +71,7 @@ function App() {
           <OverduePage
             data={grouped.overdue}
             onAction={handleComplete}
+            actionType="COMPLETE"
             completeButtonText="完了" // ボタンテキストを指定
           />
         );
@@ -79,6 +81,7 @@ function App() {
           <CompletedPage
             data={grouped.completed}
             onAction={handleDelete}
+            actionType="DELETE"
             completeButtonText="削除" // ボタンテキストを指定
           />
         );
@@ -92,6 +95,7 @@ function App() {
                 key={item.id}
                 data={item}
                 onAction={handleComplete}
+                actionType="COMPLETE"
                 completeButtonText="確認" // ボタンテキストを指定 (ここでは仮に「確認」)
               />
             ))}

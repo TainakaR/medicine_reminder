@@ -16,8 +16,8 @@ type GroupedReminders = {
 };
 
 export const groupReminders = (reminders: Reminder[]): GroupedReminders => {
-    const today = startOfDay(new Date());               // 00:00に設定
-    const sevenDaysAgo = startOfDay(subDays(today, 7)); // 7日前の00:00に設定
+    const today = startOfDay(new Date());               // 00:00に設定する
+    const sevenDaysAgo = startOfDay(subDays(today, 7)); // 7日前の00:00に設定する
     /* 空の配列を用意 */
     const groups: GroupedReminders = {
         remind: { first: [], long: [], },

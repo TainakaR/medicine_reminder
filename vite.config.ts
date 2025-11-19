@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-const repositoryName = "react-todo-app";
+const repositoryName = "medicine_reminder";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

@@ -98,15 +98,13 @@ export const ReminderItem: React.FC<Props> = ({ data, onAction, actionType, comp
 
                 {/* --- 右側: アクションエリア --- */}
                 <div className="flex flex-col justify-center items-end min-w-[100px]">
-                    {!data.isDone && (
-                        <button
-                            onClick={handleClickComplete}
-                            // actionConfigから取得したクラスを使用
-                            className={`${buttonClass} text-white font-bold py-2 px-6 rounded shadow transition-colors`}
-                        >
-                            {buttonText}
-                        </button>
-                    )}
+                    <button
+                        onClick={handleClickComplete}
+                        // actionConfigから取得したクラスを使用
+                        className={`${buttonClass} text-white font-bold py-2 px-6 rounded shadow transition-colors`}
+                    >
+                        {buttonText}
+                    </button>
                 </div>
             </div>
 

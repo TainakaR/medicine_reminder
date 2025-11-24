@@ -4,10 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 const repositoryName = "medicine_reminder";
-
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
-  base: process.env.NODE_ENV === "production" ? `/${repositoryName}/` : "/",
+  base: mode === "production" ? `/${repositoryName}/` : "/",
   build: {
     rollupOptions: {
       input: {
@@ -21,4 +20,4 @@ export default defineConfig({
     strictPort: false,
     open: true,
   },
-});
+}));

@@ -1,18 +1,37 @@
 // src/App.tsx (修正箇所のみ)
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { initReminders } from "./initReminders";
 import { ReminderItem } from "./components/ReminderItems";
 import { groupReminders } from "./utils/reminderUtils";
 import type { Reminder } from "./types";
 import { RemindPage } from "./pages/RemindPage"; 
-// OverduePage, CompletedPage はステージ1完了済みと仮定
+import { OverduePage } from "./pages/OverduePage";
+import { CompletedPage } from "./pages/CompletedPage";
+// CompletedPage はステージ1完了済みと仮定
 import { RegisterPage } from "./pages/RegisterPage"; // ★RegisterPageをインポート
 
-type TabType = "remind" | "overdue" | "completed" | "future";
+type TabType = "remind" | "overdue" | "completed";
 
 function App() {
-  const [reminders, setReminders] = useState<Reminder[]>(initReminders);
+  const [reminders, setReminders] = useState<Reminder[]>(() => {
+    try {
+      const raw = localStorage.getItem("reminders");
+      if (raw) return JSON.parse(raw) as Reminder[];
+    } catch (err) {
+      console.error("Failed to parse reminders from localStorage:", err);
+    }
+    return initReminders;
+  });
+
+  // remindersが更新されるたびにlocalStorageへ保存
+  useEffect(() => {
+    try {
+      localStorage.setItem("reminders", JSON.stringify(reminders));
+    } catch (err) {
+      console.error("Failed to save reminders to localStorage:", err);
+    }
+  }, [reminders]);
   const [activeTab, setActiveTab] = useState<TabType>("remind");
   // ★ステート名を変更し、モーダルの表示/非表示を制御
   const [showRegisterModal, setShowRegisterModal] = useState(false); 
@@ -82,72 +101,23 @@ function App() {
         );
       
       case "overdue":
-        // OverduePageが未作成のため、App.tsxの既存ロジックを仮に配置
         return (
-          <div>
-            <h2 className="text-xl font-bold text-gray-700 mb-4">1週間経過</h2>
-            <section className="mb-8">
-                <h3 className="text-lg font-bold text-red-700 border-l-4 border-red-500 pl-3 mb-4">
-                    🔥 初めての薬（期限超過）
-                </h3>
-                {grouped.overdue.first.length === 0 ? (
-                    <p className="text-gray-400 text-sm">未対応のものはありません</p>
-                ) : (
-                    grouped.overdue.first.map((item) => (
-                    <ReminderItem
-                        key={item.id}
-                        data={item}
-                        onAction={handleComplete}
-                        completeButtonText="対応"
-                        actionType={'COMPLETE'}
-                    />
-                    ))
-                )}
-            </section>
-            {grouped.overdue.first.length === 0 && grouped.overdue.long.length === 0 && (
-              <p className="text-gray-400">現在、期限超過のリマインドはありません。</p>
-            )}
-          </div>
+          <OverduePage
+            data={grouped.overdue}
+            onAction={handleComplete}
+            actionType={'COMPLETE'}
+            completeButtonText="対応"
+          />
         );
       
       case "completed":
-        // CompletedPageが未作成のため、App.tsxの既存ロジックを仮に配置
         return (
-          <div>
-            <h2 className="text-xl font-bold text-gray-700 mb-4">完了履歴</h2>
-            {grouped.completed.map((item) => (
-              <ReminderItem
-                key={item.id}
-                data={item}
-                onAction={handleDelete} // 削除アクションを渡す
-                completeButtonText="削除"
-                actionType={'DELETE'}
-              />
-            ))}
-            {grouped.completed.length === 0 && (
-                <p className="text-gray-400">まだ完了したものがありません</p>
-              )}
-          </div>
-        );
-
-      case "future":
-        // 登録一覧 (FuturePageが未作成のため、App.tsxの既存ロジックを仮に配置)
-        return (
-          <div>
-            <h2 className="text-xl font-bold text-gray-700 mb-4">これからの予定</h2>
-            {grouped.future.map((item) => (
-              <ReminderItem
-                key={item.id}
-                data={item}
-                onAction={handleChange} // 変更アクションを渡す
-                completeButtonText="変更"
-                actionType={'EDIT'}
-              />
-            ))}
-            {grouped.future.length === 0 && (
-                <p className="text-gray-400">予定はありません</p>
-            )}
-          </div>
+          <CompletedPage
+            data={grouped.completed}
+            onAction={handleDelete}
+            actionType={'DELETE'}
+            completeButtonText="削除"
+          />
         );
       default:
         return null;
@@ -197,12 +167,6 @@ function App() {
             className={getTabClass("completed")}
           >
             対処済み
-          </button>
-          <button
-            onClick={() => setActiveTab("future")}
-            className={getTabClass("future")}
-          >
-            登録一覧
           </button>
         </div>
 
